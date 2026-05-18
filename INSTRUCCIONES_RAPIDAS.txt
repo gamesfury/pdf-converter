@@ -1,0 +1,157 @@
+🚀 GUÍA RÁPIDA: Desplegar en 10 minutos
+===============================================
+
+Tu app estará lista en: https://tu-url.onrender.com
+
+═══════════════════════════════════════════════════
+
+PASO 1: Crear carpeta con los archivos
+────────────────────────────────────────
+
+1. Crea una carpeta en tu computadora llamada: pdf-converter
+2. Descarga estos 5 archivos y ponlos EN ESA CARPETA:
+   ✓ app.py
+   ✓ requirements.txt
+   ✓ index.html
+   ✓ render.yaml
+   ✓ .gitignore
+
+(La carpeta debe verse así):
+pdf-converter/
+├── app.py
+├── requirements.txt
+├── index.html
+├── render.yaml
+└── .gitignore
+
+═══════════════════════════════════════════════════
+
+PASO 2: Crear cuenta en GitHub (gratis)
+────────────────────────────────────────
+
+1. Entra a: https://github.com/signup
+2. Completa:
+   • Email: tu_email@gmail.com
+   • Password: crea una contraseña
+   • Username: algo como "tu_nombre_2025"
+3. Haz click "Create account"
+4. Verifica tu email (GitHub te enviará un correo)
+5. ¡Listo! Ya tienes cuenta GitHub
+
+═══════════════════════════════════════════════════
+
+PASO 3: Subir archivos a GitHub
+────────────────────────────────
+
+OPCIÓN A (Más fácil - sin terminal):
+────────────────────────────────────
+1. Entra a: https://github.com/new
+2. Llena:
+   • Repository name: pdf-converter
+   • Description: Conversor de PDFs para Mercado Libre
+   • ☑️ Public (debe estar marcado)
+   • ☑️ Add a README file (marca esto)
+3. Click "Create repository"
+4. Verás botón "Add file" → "Upload files"
+5. Arrastra los 5 archivos ahí (app.py, requirements.txt, etc)
+6. Click "Commit changes"
+7. ¡Listo! GitHub tiene tu código
+
+OPCIÓN B (Con terminal - si eres valiente):
+──────────────────────────────────────────────
+Abre terminal/cmd en tu carpeta "pdf-converter" y copia esto:
+
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/TU_USUARIO/pdf-converter.git
+git push -u origin main
+
+(Cambia TU_USUARIO por tu username de GitHub)
+
+═══════════════════════════════════════════════════
+
+PASO 4: Desplegar en Render.com (GRATIS)
+──────────────────────────────────────────
+
+1. Ve a: https://render.com
+2. Click "Sign up" → "Continue with GitHub"
+3. GitHub te pedirá permiso → "Authorize render-oss"
+4. En Render:
+   - Click "+ New" (arriba a la derecha)
+   - Click "Web Service"
+5. Conectar GitHub:
+   - Busca: "pdf-converter"
+   - Click para conectar el repo
+6. Configurar:
+   - Name: pdf-converter
+   - Branch: main
+   - Root Directory: (dejar en blanco)
+   - Environment: Python 3
+   - Build Command: pip install -r requirements.txt
+   - Start Command: gunicorn app:app
+   - Plan: Free (está abajo, el gratuito)
+7. Click "Create Web Service"
+8. ESPERA 2-5 MINUTOS (verás logs subiendo)
+9. Cuando diga "Live" en verde, ya está lista
+10. Tu URL estará en la parte superior: https://pdf-converter-xxxxx.onrender.com
+
+═══════════════════════════════════════════════════
+
+PASO 5: Usar la herramienta
+────────────────────────────
+
+1. Abre tu URL en el navegador: https://pdf-converter-xxxxx.onrender.com
+2. Verás la interfaz web (hermosa 😉)
+3. En el campo "URL del servidor" pega TU URL
+4. Arrastra los PDFs o haz click para seleccionar
+5. Click "Convertir"
+6. ¡Los PDFs se descargan convertidos! (landscape → portrait)
+
+═══════════════════════════════════════════════════
+
+❓ PREGUNTAS FRECUENTES
+
+P: ¿Cuánto cuesta?
+R: GRATIS. Render tiene plan gratuito para aplicaciones pequeñas.
+
+P: ¿Cuánto tiempo puedo usar?
+R: Para siempre. El plan free es permanente.
+
+P: ¿Limitaciones del plan free?
+R: Solo 1 servicio gratuito. Si necesitas más, upgrade (es pagado).
+   La app se pausará después de 15 min sin uso, pero reinicia al entrar.
+
+P: ¿Qué pasa si subo 1000 PDFs?
+R: Pueden tardar. El servidor procesa uno por uno. 
+   Mejor enviar en lotes de 50-100.
+
+P: ¿Cómo cambio la URL del servidor?
+R: En la web, en el campo "URL del servidor". Cada vez que entres,
+   puedes pegar la URL de nuevo.
+
+P: ¿Si cierro la browser se pierden los archivos?
+R: No, los procesa y descarga automáticamente. Los datos no se guardan
+   en el servidor (se borran después de procesar).
+
+═══════════════════════════════════════════════════
+
+⏱️ RESUMEN TIEMPOS
+
+Paso 1: 5 minutos (descargar/organizar archivos)
+Paso 2: 3 minutos (crear GitHub)
+Paso 3: 5 minutos (subir archivos)
+Paso 4: 5-10 minutos (desplegar en Render)
+TOTAL: ~20 minutos
+
+═══════════════════════════════════════════════════
+
+🎉 ¡LISTO!
+
+Tu aplicación estará en línea en:
+https://pdf-converter-xxxxx.onrender.com
+
+Compartela con tu equipo y ¡a convertir PDFs!
+
+═══════════════════════════════════════════════════
