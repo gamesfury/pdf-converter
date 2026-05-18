@@ -311,3 +311,177 @@ HTML_CONTENT = '''<!DOCTYPE html>
             e.preventDefault();
             dropzone.classList.add('drag-over');
         });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        clearBtn.addEventListener('click', clearFiles);
+        convertBtn.addEventListener('click', convertFiles);
+        
+        function handleFiles(files) {
+            selectedFiles = Array.from(files).filter(f => f.type === 'application/pdf');
+            renderFileList();
+        }
+        
+        function renderFileList() {
+            fileList.innerHTML = selectedFiles.map((file, idx) => `
+                <div class="file-item">
+                    <span>📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)</span>
+                    <span class="remove" onclick="removeFile(${idx})">✕</span>
+                </div>
+            `).join('');
+            
+            convertBtn.disabled = selectedFiles.length === 0;
+        }
+        
+        window.removeFile = function(idx) {
+            selectedFiles.splice(idx, 1);
+            renderFileList();
+        };
+        
+        function clearFiles() {
+            selectedFiles = [];
+            fileInput.value = '';
+            renderFileList();
+            statusDiv.style.display = 'none';
+            progressSection.style.display = 'none';
+        }
+        
+        async function convertFiles() {
+            const serverUrl = serverUrlInput.value.trim();
+            
+            if (!serverUrl) {
+                showStatus('⚠️ Por favor ingresa la URL del servidor', 'error');
+                return;
+            }
+            
+            if (selectedFiles.length === 0) {
+                showStatus('⚠️ Selecciona al menos un archivo', 'error');
+                return;
+            }
+            
+            convertBtn.disabled = true;
+            progressSection.style.display = 'block';
+            statusDiv.style.display = 'none';
+            
+            const formData = new FormData();
+            selectedFiles.forEach(file => formData.append('files', file));
+            
+            try {
+                const apiUrl = serverUrl.endsWith('/') ? serverUrl : serverUrl + '/';
+                const response = await fetch(apiUrl + 'convert', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = selectedFiles.length === 1 ? selectedFiles[0].name : 'pdfs_convertidos.zip';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                    
+                    showStatus(`✓ ${selectedFiles.length} archivo(s) convertido(s) correctamente`, 'success');
+                    clearFiles();
+                } else {
+                    const error = await response.json();
+                    showStatus('❌ Error: ' + (error.error || 'Error desconocido'), 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Error de conexión: ' + error.message, 'error');
+            } finally {
+                convertBtn.disabled = false;
+                progressSection.style.display = 'none';
+            }
+        }
+        
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>'''
+
+@app.route('/', methods=['GET'])
+def serve_index():
+    """Sirve el HTML directamente"""
+    return HTML_CONTENT
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok', 'message': 'Servidor funcionando'})
+
+@app.route('/convert', methods=['POST'])
+def convert_pdf():
+    if 'files' not in request.files or len(request.files.getlist('files')) == 0:
+        return jsonify({'error': 'No se enviaron archivos'}), 400
+    
+    files = request.files.getlist('files')
+    output_files = []
+    errors = []
+    
+    for file in files:
+        if file.filename == '':
+            continue
+            
+        try:
+            pdf_reader = PyPDF2.PdfReader(file)
+            pdf_writer = PyPDF2.PdfWriter()
+            
+            for page_num in range(len(pdf_reader.pages)):
+                page = pdf_reader.pages[page_num]
+                mediabox = page.mediabox
+                page_width = float(mediabox.width)
+                page_height = float(mediabox.height)
+                
+                if page_width > page_height:
+                    page.rotate(180)
+                
+                pdf_writer.add_page(page)
+            
+            output = BytesIO()
+            pdf_writer.write(output)
+            output.seek(0)
+            output_files.append((file.filename, output.getvalue()))
+            
+        except Exception as e:
+            errors.append({'file': file.filename, 'error': str(e)})
+    
+    if errors and not output_files:
+        return jsonify({'error': f'Error procesando archivos: {errors}'}), 500
+    
+    if len(output_files) == 1:
+        output_buffer = BytesIO(output_files[0][1])
+        return send_file(
+            output_buffer,
+            as_attachment=True,
+            download_name=output_files[0][0],
+            mimetype='application/pdf'
+        )
+    
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for filename, content in output_files:
+            zip_file.writestr(filename, content)
+    
+    zip_buffer.seek(0)
+    return send_file(
+        zip_buffer,
+        as_attachment=True,
+        download_name='pdfs_convertidos.zip',
+        mimetype='application/zip'
+    )
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
