@@ -445,7 +445,7 @@ def convert_pdf():
                 page_height = float(mediabox.height)
                 
                 if page_width > page_height:
-                    page.rotate(180)
+                    page.mediabox = (0, 0, page_height, page_width)
                 
                 pdf_writer.add_page(page)
             
